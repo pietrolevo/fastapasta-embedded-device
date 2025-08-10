@@ -7,7 +7,6 @@
 
 static cookState current_state = STATE_IDLE;
 
-
 static cookState FSM_transition(cookState state, cookEvent event) {
   switch (state) {
   case STATE_IDLE:
@@ -44,7 +43,7 @@ static cookState FSM_transition(cookState state, cookEvent event) {
     break;
   
   default:
-    return state;
+    return STATE_ERROR;
     break;
   }
 }
@@ -66,5 +65,11 @@ cookState FSM_get_state(void) {
 
 
 void FSM_handle_event(cookEvent event) {
-  current_state = FSM_transition(current_state, event);
+  cookState new_state = FSM_transition(current_state, event);
+  current_state = new_state;
+}
+
+
+void FSM_receive_event(cookEvent event) {
+  FSM_handle_event(event);
 }
