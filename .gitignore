@@ -56,3 +56,15 @@ dkms.conf
 
 # vscode
 .vscode/
+
+# ESP-IDF / CMake build output
+/build/
+*/build/
+**/build/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+
+# IDF generated backups
+sdkconfig.old
