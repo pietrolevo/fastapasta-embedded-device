@@ -5,7 +5,7 @@
 
 #include "state_machine.h"
 
-int main(void) {
+int app_main(void) {
   FSM_init();
   return 0;
 }

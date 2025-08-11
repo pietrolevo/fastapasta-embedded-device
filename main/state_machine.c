@@ -46,6 +46,7 @@ static cookState FSM_transition(cookState state, cookEvent event) {
     return STATE_ERROR;
     break;
   }
+  return STATE_ERROR;
 }
 
 

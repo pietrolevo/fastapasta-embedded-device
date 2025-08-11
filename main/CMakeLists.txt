@@ -1,6 +1,6 @@
 idf_component_register(
   SRCS
-    "main.c"
+    "app_main.c"
     "state_machine.c"
   INCLUDE_DIRS # Header files included above
     "."
