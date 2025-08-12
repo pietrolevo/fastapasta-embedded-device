@@ -206,11 +206,11 @@ static void mqtt5_app_start(void)
     };
 
     esp_mqtt_client_config_t mqtt5_cfg = {
-        .broker.address.uri = CONFIG_BROKER_URL,
+        .broker.address.uri = "mqtt://broker.hivemq.com",
         .session.protocol_ver = MQTT_PROTOCOL_V_5,
         .network.disable_auto_reconnect = true,
-        .credentials.username = "123",
-        .credentials.authentication.password = "456",
+        .credentials.username = "",
+        .credentials.authentication.password = "",
         .session.last_will.topic = "/topic/will",
         .session.last_will.msg = "i will leave",
         .session.last_will.msg_len = 12,
@@ -276,7 +276,14 @@ void app_main(void)
     esp_log_level_set("transport", ESP_LOG_VERBOSE);
     esp_log_level_set("outbox", ESP_LOG_VERBOSE);
 
-    ESP_ERROR_CHECK(nvs_flash_init());
+    //Initialize NVS
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+      ESP_ERROR_CHECK(nvs_flash_erase());
+      ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
+    
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
