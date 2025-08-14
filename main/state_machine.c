@@ -82,11 +82,28 @@ static void on_state_change(cookState state) {
 }
 
 
+void init_msg(void) {
+    printf("\n\n");
+    printf("     █████╗   ██████╗  \n");
+    printf("    ██╔══██╗ ██╔════╝  \n");
+    printf("    ███████║ ██║  ███╗\n");
+    printf("    ██╔══██║ ██║   ██║ \n");
+    printf("    ██║  ██║ ╚██████╔╝ \n");
+    printf("    ╚═╝  ╚═╝  ╚═════╝  \n");
+    printf("═══════════════════════════════════════════════\n");
+    printf("Fastapasta project\n");
+    printf("by Alessandro Gibello\n");
+    printf("Tutti i diritti riservati\n");
+    printf("═══════════════════════════════════════════════\n\n");
+    printf("Inizializzazione completata\n\n");
+}
+
+
 void FSM_init(void) {
   current_state = STATE_IDLE;
   state_mutex = xSemaphoreCreateMutex();
   event_queue = xQueueCreate(10, sizeof(cookEvent));
-  printf("Inizializzazione completata\n");
+  init_msg();
   on_state_change(FSM_get_state());
 }
 
