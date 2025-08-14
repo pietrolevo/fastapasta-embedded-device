@@ -11,6 +11,7 @@ static cookState current_state = STATE_IDLE;
 static SemaphoreHandle_t state_mutex = NULL;
 static QueueHandle_t event_queue = NULL;
 
+
 static cookState FSM_transition(cookState state, cookEvent event) {
   switch (state) {
   case STATE_IDLE:
@@ -54,10 +55,39 @@ static cookState FSM_transition(cookState state, cookEvent event) {
 }
 
 
+static void on_state_change(cookState state) {
+  switch (state) {
+    case STATE_IDLE:
+      printf("Stato: IDLE\n");
+      break;
+    case STATE_WATER_HEATING:
+      printf("Stato: Riscaldamento acqua\n");
+      break;
+    case STATE_COOKING:
+      printf("Stato: Cottura in corso\n");
+      break;
+    case STATE_FINISHED:
+      printf("Stato: Cottura completata\n");
+      break;
+    case STATE_ERROR:
+      printf("Stato: Errore\n");
+      break;
+    case STATE_OFFLINE:
+      printf("Stato: Offline\n");
+      break;
+    default:
+      printf("Stato sconosciuto\n");
+      break;
+  }
+}
+
+
 void FSM_init(void) {
   current_state = STATE_IDLE;
   state_mutex = xSemaphoreCreateMutex();
   event_queue = xQueueCreate(10, sizeof(cookEvent));
+  printf("Inizializzazione completata\n");
+  on_state_change(FSM_get_state());
 }
 
 
@@ -70,7 +100,7 @@ void FSM_set_state(cookState state) {
 
 
 cookState FSM_get_state(void) {
-  cookState state;
+  cookState state = STATE_ERROR;
   if (xSemaphoreTake(state_mutex, portMAX_DELAY)) {
     state = current_state;
     xSemaphoreGive(state_mutex);
@@ -82,7 +112,10 @@ cookState FSM_get_state(void) {
 void FSM_handle_event(cookEvent event) {
   if (xSemaphoreTake(state_mutex, portMAX_DELAY)) {
     cookState new_state = FSM_transition(current_state, event);
-    current_state = new_state;
+    if (new_state != current_state) {
+      current_state = new_state;
+      on_state_change(new_state);
+    }
     xSemaphoreGive(state_mutex);
   }
 }
