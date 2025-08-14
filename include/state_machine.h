@@ -32,5 +32,6 @@ void FSM_set_state(cookState state);
 cookState FSM_get_state(void);
 void FSM_handle_event(cookEvent event);
 void FSM_receive_event(cookEvent event);
+void FSM_event_task(void *pvParameters);
 
 #endif

@@ -4,8 +4,12 @@
 */
 
 #include "state_machine.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 
 static cookState current_state = STATE_IDLE;
+static SemaphoreHandle_t state_mutex = NULL;
+static QueueHandle_t event_queue = NULL;
 
 static cookState FSM_transition(cookState state, cookEvent event) {
   switch (state) {
@@ -52,25 +56,48 @@ static cookState FSM_transition(cookState state, cookEvent event) {
 
 void FSM_init(void) {
   current_state = STATE_IDLE;
+  state_mutex = xSemaphoreCreateMutex();
+  event_queue = xQueueCreate(10, sizeof(cookEvent));
 }
 
 
 void FSM_set_state(cookState state) {
-  current_state = state;
+  if (xSemaphoreTake(state_mutex, portMAX_DELAY)) {
+    current_state = state;
+    xSemaphoreGive(state_mutex);
+  }
 }
 
 
 cookState FSM_get_state(void) {
-  return current_state;
+  cookState state;
+  if (xSemaphoreTake(state_mutex, portMAX_DELAY)) {
+    state = current_state;
+    xSemaphoreGive(state_mutex);
+  }
+  return state;
 }
 
 
 void FSM_handle_event(cookEvent event) {
-  cookState new_state = FSM_transition(current_state, event);
-  current_state = new_state;
+  if (xSemaphoreTake(state_mutex, portMAX_DELAY)) {
+    cookState new_state = FSM_transition(current_state, event);
+    current_state = new_state;
+    xSemaphoreGive(state_mutex);
+  }
 }
 
 
 void FSM_receive_event(cookEvent event) {
-  FSM_handle_event(event);
+  xQueueSend(event_queue, &event, portMAX_DELAY);
+}
+
+
+void FSM_event_task(void *pvParameters) {
+  cookEvent event;
+  while(1) {
+    if (xQueueReceive(event_queue, &event, portMAX_DELAY)) {
+      FSM_handle_event(event);
+    }
+  }
 }
